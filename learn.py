@@ -217,5 +217,40 @@ def get_word_scores(chapter_id, user_id):
             'message': str(e)
         }), 500
 
+@app.route('/get_user_scores', methods=['GET'])
+def get_user_scores():
+    try:
+        user_id = request.args.get('user_id')
+        chapter_id = request.args.get('chapter_id')
+        
+        if not user_id or not chapter_id:
+            return jsonify({
+                'status': 'error',
+                'message': '缺少必要参数'
+            })
+
+        # 查询用户在特定章节的分数记录，按streak降序排序
+        scores = Score.query.filter_by(
+            user_id=user_id,
+            chapter_id=chapter_id
+        ).order_by(Score.streak.desc()).all()
+        
+        score_list = [{
+            'word': score.word,
+            'streak': score.streak
+        } for score in scores]
+        
+        return jsonify({
+            'status': 'success',
+            'scores': score_list
+        })
+        
+    except Exception as e:
+        print("Error getting scores:", str(e))
+        return jsonify({
+            'status': 'error',
+            'message': '获取分数记录失败'
+        })
+
 if __name__ == '__main__':
     app.run(debug=True, port=53720)

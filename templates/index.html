@@ -367,6 +367,7 @@
 
         .next-button {
             background-color: #28a745;
+            height: 100px !important;
             color: white;
         }
 
@@ -384,6 +385,7 @@
 
         .answer-input {
             display: flex;
+            width: 80vh;
             gap: 10px;
             margin: 10px 0;
         }
@@ -408,6 +410,7 @@
 
         .submit-button {
             background-color: #007bff;
+            height: 100px !important;
             color: white;
         }
 
@@ -474,6 +477,116 @@
             color: white;
             border-color: #0056b3;
         }
+
+        /* 修改输入框样式 */
+        .answer-input input[type="text"] {
+            width: 20px;          /* 设置固定宽度 */
+            height: 100px;         /* 设置固定高度 */
+            padding: 0 5px;       /* 调整内边距 */
+            box-sizing: border-box;/* 确保padding不会增加总宽度 */
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 24px;      /* 调整字体大小 */
+            line-height: 20px;    /* 调整行高 */
+        }
+
+        /* 确保输入框和按钮垂直对齐 */
+        .answer-input {
+            display: flex;
+            align-items: center;  /* 垂直居中对齐 */
+            gap: 10px;
+        }
+
+        .word-display {
+            height: 40px;           /* 预留固定高度 */
+            display: flex;
+            align-items: center;    /* 垂直居中 */
+            margin-bottom: 10px;    /* 与输入框保持间距 */
+        }
+
+        #currentWord {
+            font-size: 24px;
+            font-weight: bold;
+            min-height: 36px;       /* 确保即使没有内容也保持高度 */
+            display: inline-block;
+        }
+
+        .quiz-section {
+            min-height: 200px;      /* 为整个答题区预留最小高度 */
+        }
+
+        /* 统一的按钮基础样式 */
+        .action-button {
+            height: 100px;
+            width: 45px;
+            padding: 0;
+            line-height: 100px;
+            font-size: 13px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        /* 提交按钮特定样式 */
+        .submit-button {
+            background-color: #007bff;
+        }
+
+        .submit-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 下一题按钮特定样式 */
+        .next-button {
+            background-color: #28a745;
+        }
+
+        .next-button:hover {
+            background-color: #218838;
+        }
+
+        /* 按钮组样式 */
+        .button-group {
+            display: flex;
+            gap: 0;              /* 移除按钮之间的间距 */
+            align-items: flex-start;
+        }
+
+        /* 统一的按钮基础样式 */
+        .action-button {
+            height: 100px !important;
+            width: 45px;
+            padding: 0;
+            margin: 0;           /* 确保没有外边距 */
+            line-height: 100px;
+            font-size: 13px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        /* 提交按钮特定样式 */
+        .submit-button {
+            margin-right: 10px;  /* 只给提交按钮添加右边距 */
+            background-color: #28a745 !important;  /* 绿色 */
+        }
+
+        .submit-button:hover {
+            background-color: #218838 !important;  /* 深绿色 */
+        }
+
+        /* 下一题按钮特定样式 */
+        .next-button {
+            background-color: #ff69b4 !important;  /* 粉色 */
+        }
+
+        .next-button:hover {
+            background-color: #ff1493 !important;  /* 深粉色 */
+        }
     </style>
 </head>
 <body>
@@ -537,13 +650,13 @@
         <div class="quiz-section" id="quizSection">
             <h2>答题区</h2>
             <div class="word-display">
-                <span id="currentWord"></span>
+                <span id="currentWord" style="font-size: 24px; font-weight: bold;"></span>
             </div>
             <div class="answer-input">
-                <input type="text" id="answerInput" placeholder="请输入答案">
+                <input type="text" id="answerInput" placeholder="答案">
                 <div class="button-group">
                     <button onclick="checkAnswer()" class="action-button submit-button">提交</button>
-                    <button id="nextButton" onclick="handleNextWord()" class="action-button next-button" style="visibility: hidden;">下一题</button>
+                    <button id="nextButton" onclick="handleNextWord()" class="action-button next-button" style="display: none;">下一题</button>
                 </div>
             </div>
             <div class="error-message" id="errorMessage"></div>
@@ -647,7 +760,6 @@
             return;
         }
 
-        // 更新章节按钮状态
         document.querySelectorAll('#chapterButtons button').forEach(button => {
             button.classList.remove('selected');
             if (button.parentNode === event.target.parentNode) {
@@ -664,7 +776,8 @@
             })
             .then(wordsData => {
                 currentWords = wordsData;
-                startQuiz();
+                showNextWord();
+                document.getElementById('quizSection').style.display = 'block';
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -694,6 +807,15 @@
 
         const isCorrect = answer === currentWord.answerA || answer === currentWord.answerB;
         
+        if (!isCorrect) {
+            // 显示错误信息
+            errorMessageDiv.innerHTML = `你输入的：<span class="user-answer">${answer}</span>，` +
+                                     `<span class="word-highlight">${currentWord.word}</span>` +
+                                     ` 的正确答案是：<span class="correct-answer">${currentWord.answerA}</span>`;
+            // 显示下一题按钮
+            nextButton.style.display = 'block';
+        }
+
         fetch('/record_answer', {
             method: 'POST',
             headers: {
@@ -711,16 +833,11 @@
             if (data.status === 'success') {
                 if (isCorrect) {
                     errorMessageDiv.innerHTML = '<span class="success-message">回答正确！</span>';
-                    nextButton.style.visibility = 'hidden';
+                    nextButton.style.display = 'none';
                     
                     setTimeout(() => {
                         showNextWord();
                     }, 1000);
-                } else {
-                    errorMessageDiv.innerHTML = `你输入的：<span class="user-answer">${answer}</span>，` +
-                                             `<span class="word-highlight">${currentWord.word}</span>` +
-                                             ` 的正确答案是：<span class="correct-answer">${currentWord.answerA}</span>`;
-                    nextButton.style.visibility = 'visible';
                 }
             }
         })
@@ -730,29 +847,19 @@
         });
     }
 
-    function startQuiz() {
-        document.getElementById('quizSection').style.display = 'block';
+    function handleNextWord() {
+        document.getElementById('nextButton').style.display = 'none';
         showNextWord();
     }
 
     function showNextWord() {
         currentWord = getRandomWord();
         
-        const wordElement = document.getElementById('currentWord');
-        const answerInput = document.getElementById('answerInput');
-        const errorMessage = document.getElementById('errorMessage');
-        const nextButton = document.getElementById('nextButton');
-        
-        if (!wordElement || !answerInput || !errorMessage || !nextButton) {
-            console.error('Required DOM elements not found');
-            return;
-        }
-        
         if (currentWord) {
-            wordElement.textContent = currentWord.word;
-            answerInput.value = '';
-            errorMessage.innerHTML = '';
-            nextButton.style.visibility = 'hidden';
+            document.getElementById('currentWord').textContent = currentWord.word;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('errorMessage').innerHTML = '';
+            document.getElementById('nextButton').style.display = 'none';
         } else {
             finishQuiz();
         }

@@ -79,50 +79,41 @@ def login():
         data = request.get_json()
         email = data.get('email')
         
-        # 查找用户
+        if not email:
+            return jsonify({
+                'status': 'error',
+                'message': '请输入邮箱地址'
+            })
+
+        # 查询用户是否存在
         user = User.query.filter_by(email=email).first()
         
         if user:
-            # 用户存在，直接登录
-            session['user_id'] = user.id
-            session['email'] = user.email
-            session['username'] = user.username
+            # 用户存在，返回用户信息
             return jsonify({
                 'status': 'success',
-                'message': '登录成功',
-                'user': {
-                    'id': user.id,
-                    'email': user.email,
-                    'username': user.username
-                }
+                'user_id': user.id,
+                'username': user.username,
+                'email': user.email
             })
         else:
             # 用户不存在，创建新用户
-            new_user = User(
-                email=email,
-                username='Newbee'
-            )
+            new_user = User(email=email, username=email.split('@')[0])  # 使用邮箱前缀作为用户名
             db.session.add(new_user)
             db.session.commit()
             
-            session['user_id'] = new_user.id
-            session['email'] = new_user.email
-            session['username'] = new_user.username
-            
             return jsonify({
                 'status': 'success',
-                'message': '新用户创建成功',
-                'user': {
-                    'id': new_user.id,
-                    'email': new_user.email,
-                    'username': new_user.username
-                }
+                'user_id': new_user.id,
+                'username': new_user.username,
+                'email': new_user.email
             })
             
     except Exception as e:
+        print("Login error:", str(e))
         return jsonify({
             'status': 'error',
-            'message': str(e)
+            'message': '服务器错误，请重试'
         }), 500
 
 @app.route('/update_username', methods=['POST'])

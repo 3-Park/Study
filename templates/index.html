@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>单词学习</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         body {
             margin: 0;
@@ -587,6 +586,37 @@
         .next-button:hover {
             background-color: #ff1493 !important;  /* 深粉色 */
         }
+
+        /* Toast 样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .login-section {
+            margin: 10px 0;
+        }
+
+        .login-button {
+            padding: 5px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .login-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -650,12 +680,13 @@
         <div class="quiz-section" id="quizSection">
             <h2>答题区</h2>
             <div class="word-display">
+                <span style="font-size: 20px; margin-right: 10px;">随机单词：</span>
                 <span id="currentWord" style="font-size: 24px; font-weight: bold;"></span>
             </div>
             <div class="answer-input">
-                <input type="text" id="answerInput" placeholder="答案">
+                <input type="text" id="answerInput" placeholder="答案" autocomplete="off">
                 <div class="button-group">
-                    <button onclick="checkAnswer()" class="action-button submit-button">提交</button>
+                    <button id="submitButton" class="action-button submit-button">提交</button>
                     <button id="nextButton" onclick="handleNextWord()" class="action-button next-button" style="display: none;">下一题</button>
                 </div>
             </div>
@@ -676,6 +707,9 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- 添加 Toast 元素 -->
+    <div id="toast" class="toast"></div>
 
     <script>
     // 全局变量
@@ -794,25 +828,36 @@
         return currentWords[randomIndex];
     }
 
+    // 检查登录状态
+    function checkLoginStatus() {
+        const userId = localStorage.getItem('userId');
+        console.log('Current userId:', userId); // 添加调试日志
+        return userId != null;
+    }
+
     function checkAnswer() {
+        // 先检查登录状态
+        if (!checkLoginStatus()) {
+            showToast('请先登录');
+            return;
+        }
+
         const answer = document.getElementById('answerInput').value.trim();
+        if (!answer) {
+            showToast('请输入答案');
+            return;
+        }
+
         const errorMessageDiv = document.getElementById('errorMessage');
         const nextButton = document.getElementById('nextButton');
         const userId = localStorage.getItem('userId');
 
-        if (!userId) {
-            alert('请先登录！');
-            return;
-        }
-
         const isCorrect = answer === currentWord.answerA || answer === currentWord.answerB;
         
         if (!isCorrect) {
-            // 显示错误信息
             errorMessageDiv.innerHTML = `你输入的：<span class="user-answer">${answer}</span>，` +
                                      `<span class="word-highlight">${currentWord.word}</span>` +
                                      ` 的正确答案是：<span class="correct-answer">${currentWord.answerA}</span>`;
-            // 显示下一题按钮
             nextButton.style.display = 'block';
         }
 
@@ -843,7 +888,7 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('记录答题结果失败');
+            showToast('记录答题结果失败');
         });
     }
 
@@ -872,6 +917,113 @@
 
     // 添加调试日志
     console.log('Courses data:', {{ courses|tojson|safe }});
+
+    // Toast 显示函数
+    function showToast(message, duration = 2000) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.display = 'block';
+        
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, duration);
+    }
+
+    // 页面加载时清除登录状态
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM Content Loaded'); // 调试信息
+
+        // 清除登录状态
+        localStorage.removeItem('userId');
+        
+        // 获取顶部导航栏的登录按钮
+        const loginButton = document.querySelector('.login-button');
+        console.log('Login button found:', loginButton); // 调试信息
+
+        if (loginButton) {
+            loginButton.addEventListener('click', function() {
+                console.log('Login button clicked'); // 调试信息
+                handleLogin();
+            });
+        }
+
+        // 提交按钮事件
+        const submitButton = document.getElementById('submitButton');
+        submitButton.addEventListener('click', function() {
+            if (!checkLoginStatus()) {
+                showToast('请先登录');
+                return;
+            }
+            checkAnswer();
+        });
+    });
+
+    // 登录处理函数
+    function handleLogin() {
+        const emailInput = document.getElementById('emailInput');
+        const loginButton = document.querySelector('.login-button');
+        const email = emailInput ? emailInput.value.trim() : '';
+        
+        if (!email) {
+            alert('请输入有效的邮箱地址');
+            return;
+        }
+
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                localStorage.setItem('userId', data.user_id);
+                
+                // 更改 h2 标题
+                const accountTitle = document.querySelector('.account-selection h2');
+                if (accountTitle) {
+                    accountTitle.textContent = '用户信息';
+                }
+
+                // 显示用户信息
+                const userInfoDiv = document.getElementById('userInfo');
+                if (userInfoDiv) {
+                    userInfoDiv.innerHTML = `
+                        <div style="margin-bottom: 5px;">
+                            <span style="font-size: 12px;">用户名：</span>
+                            <span>${data.username}</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 12px;">邮箱：</span>
+                            <span>${data.email}</span>
+                        </div>
+                    `;
+                    userInfoDiv.style.display = 'block';
+                }
+                
+                // 隐藏输入框和登录按钮
+                if (emailInput) {
+                    emailInput.style.display = 'none';
+                }
+                if (loginButton) {
+                    loginButton.style.display = 'none';
+                }
+
+                // 隐藏整个登录区域
+                const loginSection = document.querySelector('.account-login');
+                if (loginSection) {
+                    loginSection.style.display = 'none';
+                }
+            } else {
+                alert(data.message || '登录失败');
+            }
+        })
+        .catch(error => {
+            alert('登录失败，请重试');
+        });
+    }
     </script>
 </body>
 </html>

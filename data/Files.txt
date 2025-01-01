@@ -1,0 +1,8 @@
+Ch_0=./data/Ch_0.txt
+Ch_1=./data/Ch_1.txt
+Ch_2=./data/Ch_2.txt
+Ch_3=./data/Ch_3.txt
+Ch_4=./data/Ch_4.txt
+DLG_1=./data/DLG_1.txt
+DLG_2=./data/DLG_2.txt
+DLG_3=./data/DLG_3.txt

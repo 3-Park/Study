@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>考试页面</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        /* 账号选择区域 */
+        .account-section {
+            width: 200px;
+            padding: 10px;
+            margin-right: 20px;
+        }
+        /* 课程选择区域 */
+        .course-section {
+            width: 500px;  /* 增加宽度以容纳两列 */
+            padding: 10px;
+        }
+        .course-categories {
+            display: flex;
+            gap: 20px;  /* 两个分类之间的间距 */
+        }
+        .course-category {
+            flex: 1;  /* 平均分配空间 */
+            margin-bottom: 15px;
+        }
+        .course-category h4 {
+            margin: 5px 0;
+            color: #333;
+            font-size: 14px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .account-btn {
+            width: 150px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .account-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .account-btn:not(.active) {
+            background-color: #f0f0f0;
+        }
+        .course-container {
+            display: grid;
+            grid-template-columns: repeat(2, 120px);
+            gap: 8px;
+        }
+        .course-btn {
+            width: 120px;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+        }
+        .exam-section {
+            margin-top: 30px;
+        }
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);  /* 每行4个题目 */
+            gap: 15px;  /* 题目之间的间距 */
+            margin-bottom: 20px;
+        }
+        .question-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 250px;  /* 固定宽度 */
+        }
+        .question-item p {
+            margin: 0 0 10px 0;
+            font-size: 14px;  /* 稍微减小题目文字大小 */
+        }
+        .question-item input {
+            width: 100%;  /* 输入框宽度占满容器 */
+            box-sizing: border-box;  /* 确保padding不会增加总宽度 */
+        }
+        .wrong-answer {
+            color: red;
+        }
+        .submit-btn {
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .result-section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        /* 添加返回按钮样式 */
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #666;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 15px;
+        }
+        .back-button:hover {
+            background-color: #555;
+        }
+        /* 账号显示区域样式 */
+        .account-display {
+            width: 200px;
+            padding: 10px;
+            margin-right: 20px;
+        }
+        .current-account {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 添加返回按钮 -->
+        <div style="margin-bottom: 20px;">
+            <a href="{{ url_for('index') }}" class="back-button">返回主页</a>
+        </div>
+        
+        <div class="header">
+            <!-- 修改账号显示部分 -->
+            <div class="account-display">
+                <h3>当前账号</h3>
+                <div class="current-account">
+                    {{ current_account }}
+                </div>
+            </div>
+
+            <!-- 课程选择部分 -->
+            <div class="course-section">
+                <h3>课程选择</h3>
+                <div class="course-categories">
+                    <!-- 标准日本语分类 -->
+                    <div class="course-category">
+                        <h4>书-标准日本语</h4>
+                        <form action="{{ url_for('start_exam') }}" method="post" class="course-container">
+                            {% for key in Files.keys() %}
+                                {% if key.startswith('Ch') %}
+                                <button type="submit" name="exam_ch" value="{{ key }}" class="course-btn">
+                                    {{ key }}
+                                </button>
+                                {% endif %}
+                            {% endfor %}
+                        </form>
+                    </div>
+                    <!-- 多灵国分类 -->
+                    <div class="course-category">
+                        <h4>多灵国</h4>
+                        <form action="{{ url_for('start_exam') }}" method="post" class="course-container">
+                            {% for key in Files.keys() %}
+                                {% if key.startswith('DLG') %}
+                                <button type="submit" name="exam_ch" value="{{ key }}" class="course-btn">
+                                    {{ key }}
+                                </button>
+                                {% endif %}
+                            {% endfor %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 考试部分 -->
+        {% if questions %}
+        <div class="exam-section">
+            <h2>考试内容 - {{ current_chapter }}</h2>
+            <form action="{{ url_for('submit_exam') }}" method="post">
+                <input type="hidden" name="chapter" value="{{ current_chapter }}">
+                <div class="questions-grid">
+                    {% for index, question in questions.items() %}
+                    <div class="question-item {% if results and index in wrong_answers %}wrong-answer{% endif %}">
+                        <p>{{ loop.index }}. {{ question['question'] }}</p>
+                        <input type="text" name="answer_{{ index }}" 
+                               placeholder="请输入答案" 
+                               style="padding: 8px;"
+                               autocomplete="off"
+                               {% if results %}value="{{ submitted_answers[index] }}"{% endif %}>
+                        {% if results and index in wrong_answers %}
+                        <p class="wrong-answer">正确答案: {{ question['answer'] }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if not results %}
+                <button type="submit" class="submit-btn">提交答案</button>
+                {% endif %}
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- 结果显示部分 -->
+        {% if results %}
+        <div class="result-section">
+            <h3>考试结果</h3>
+            <p>总题数: {{ total_questions }}</p>
+            <p>正确数: {{ correct_count }}</p>
+            <p>得分: {{ (correct_count / total_questions * 100) | round(2) }}%</p>
+            <a href="{{ url_for('exam') }}" class="submit-btn" style="text-decoration: none; display: inline-block;">
+                重新考试
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html> 

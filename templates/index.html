@@ -344,7 +344,7 @@
 
         .button-group {
             display: flex;
-            gap: 5px;
+            flex-wrap: wrap;
         }
 
         .submit-button, .next-button {
@@ -688,7 +688,7 @@
             <!-- 课程选择 -->
             <div class="selection-section">
                 <h3>选择课程</h3>
-                <div id="courseButtons" class="button-group">
+                <div id="courseButtons" class="button-group" style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <!-- 动态加载课程按钮 -->
                 </div>
             </div>
@@ -696,7 +696,7 @@
             <!-- 章节选择 -->
             <div class="selection-section">
                 <h3>选择章节</h3>
-                <div id="chapterButtons" class="button-group">
+                <div id="chapterButtons" class="button-group" style="display: flex; gap: 5px; flex-wrap: wrap;">
                     <!-- 动态加载章节按钮 -->
                 </div>
             </div>

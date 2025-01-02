@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, session
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for
 from models import db, Course, Word, User, Score
 import os
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS  # 直接导入配置常量
@@ -8,7 +8,7 @@ def create_app():
     # 直接使用配置文件中的常量
     app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = SQLALCHEMY_TRACK_MODIFICATIONS
-    app.secret_key = 'your-secret-key-here'
+    app.secret_key = 'abcdefg'
     
     db.init_app(app)
     return app
@@ -16,6 +16,7 @@ def create_app():
 app = create_app()
 
 @app.route('/')
+@app.route('/index')  # 添加 /index 路由
 def index():
     try:
         # 从数据库获取所有课程信息并转换为字典
@@ -252,27 +253,88 @@ def get_user_scores():
             'message': '获取分数记录失败'
         })
 
-@app.route('/exam', methods=['POST'])
+@app.route('/exam', methods=['GET', 'POST'])
 def exam():
-    user_id = request.form.get('userId')
-    chapter_id = request.form.get('chapterId')
+    print("进入exam路由")
+    print(f"请求方法: {request.method}")
+    print(f"当前session内容: {session}")
     
-    # 获取用户信息
-    user = User.query.filter_by(id=user_id).first()
-    
-    # 获取课程信息
-    chapter = Course.query.filter_by(chapter_id=chapter_id).first()
-    course_info = f"{chapter.language} - {chapter.course} - {chapter.chapter}" if chapter else "未知课程"
-    
-    # 获取该章节的所有单词
-    words = Word.query.filter_by(chapter_id=chapter_id).all()
-    
-    return render_template('exam.html',
-                         user=user,
-                         user_id=user_id,
-                         chapter_id=chapter_id,
-                         course_info=course_info,
-                         words=words)
+    if request.method == 'POST':
+        # 打印完整的表单数据
+        print(f"完整的POST数据: {request.form}")
+        
+        user_id = request.form.get('userId')
+        chapter_id = request.form.get('chapterId')
+        
+        print(f"解析后的数据: user_id={user_id}, chapter_id={chapter_id}")
+        
+        error_msg = []
+        if not user_id:
+            error_msg.append("缺少用户ID")
+        if not chapter_id:
+            error_msg.append("缺少章节ID")
+            
+        if error_msg:
+            # 返回错误信息而不是重定向
+            error_details = " | ".join(error_msg)
+            return f"POST请求参数不完整: {error_details}", 400
+        
+        try:
+            session.clear()
+            session['user_id'] = user_id
+            session['chapter_id'] = chapter_id
+            session.modified = True
+            
+            print(f"存入session后的内容: {session}")
+            return redirect('/exam')
+            
+        except Exception as e:
+            # 返回错误信息而不是重定向
+            return f"Session存储错误: {str(e)}", 500
+            
+    else:  # GET请求
+        print("处理GET请求")
+        print(f"GET请求时的session内容: {session}")
+        
+        try:
+            user_id = session.get('user_id')
+            chapter_id = session.get('chapter_id')
+            
+            print(f"从session获取的数据: user_id={user_id}, chapter_id={chapter_id}")
+            
+            if not user_id or not chapter_id:
+                # 返回错误信息而不是重定向
+                return "Session中缺少必要数据", 400
+                
+            # 获取用户信息
+            user = User.query.filter_by(id=user_id).first()
+            if not user:
+                return f"未找到用户: {user_id}", 404
+            
+            # 获取课程信息
+            chapter = Course.query.filter_by(chapter_id=chapter_id).first()
+            if not chapter:
+                return f"未找到章节: {chapter_id}", 404
+                
+            course_info = f"{chapter.language} - {chapter.course} - {chapter.chapter}"
+            
+            # 获取该章节的所有单词
+            words = Word.query.filter_by(chapter_id=chapter_id).all()
+            print(f"获取到 {len(words)} 个单词")
+            
+            result = render_template('exam.html',
+                                  user=user,
+                                  user_id=user_id,
+                                  chapter_id=chapter_id,
+                                  course_info=course_info,
+                                  words=words)
+                                  
+            session.clear()
+            return result
+            
+        except Exception as e:
+            # 返回错误信息而不是重定向
+            return f"处理GET请求时发生错误: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=53720)

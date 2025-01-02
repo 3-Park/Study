@@ -708,9 +708,9 @@
             <button id="exam" 
                     onclick="startExam()"
                     style="
-                        height: 20px;
+                        height: 30px;
                         padding: 0 10px;
-                        margin: 5px 0;
+                        margin: 0;
                         background-color: #007bff;
                         color: white;
                         border: none;
@@ -718,10 +718,7 @@
                         cursor: pointer;
                         font-size: 12px;
                         line-height: 20px;
-                        display: inline-block;
-                        vertical-align: middle;
-                        position: relative;
-                        z-index: 1;
+                        display: block;
                     ">
                 进入考试
             </button>
@@ -732,7 +729,7 @@
             <div class="answer-input">
                 <input type="text" id="answerInput" placeholder="请输入答案" autocomplete="off">
                 <div class="button-group">
-                    <button id="submitButton" class="action-button submit-button">提交</button>
+                    <button id="submitButton" class="action-button submit-button" onclick="checkAnswer()">提交</button>
                     <button id="nextButton" onclick="handleNextWord()" class="action-button next-button" style="display: none;">下一题</button>
                 </div>
             </div>
@@ -838,6 +835,8 @@
 
     function selectChapter(chapterId) {
         currentChapterId = chapterId;
+        console.log('选择章节:', chapterId);  // 添加调试信息
+        
         const userId = localStorage.getItem('userId');
         
         if (!userId) {
@@ -983,31 +982,23 @@
 
     // 页面加载时清除登录状态
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM Content Loaded'); // 调试信息
+        if (localStorage.getItem('isReturning') === 'true') {
+            const userId = localStorage.getItem('userId');
+            const username = localStorage.getItem('username');
+            const selectedLanguage = localStorage.getItem('selectedLanguage');
 
-        // 清除登录状态
-        localStorage.removeItem('userId');
-        
-        // 获取顶部导航栏的登录按钮
-        const loginButton = document.querySelector('.login-button');
-        console.log('Login button found:', loginButton); // 调试信息
+            if (userId && username) {
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('userInfo').querySelector('span').textContent = '用户名：' + username;
+                document.getElementById('loginForm').style.display = 'none';
 
-        if (loginButton) {
-            loginButton.addEventListener('click', function() {
-                console.log('Login button clicked'); // 调试信息
-                handleLogin();
-            });
-        }
-
-        // 提交按钮事件
-        const submitButton = document.getElementById('submitButton');
-        submitButton.addEventListener('click', function() {
-            if (!checkLoginStatus()) {
-                showToast('请先登录');
-                return;
+                if (selectedLanguage) {
+                    selectLanguage(selectedLanguage, true);
+                }
             }
-            checkAnswer();
-        });
+            
+            localStorage.removeItem('isReturning');
+        }
     });
 
     // 登录处理函数
@@ -1084,10 +1075,6 @@
 
     function loadUserScores() {
         const userId = localStorage.getItem('userId');
-        if (!userId || !currentChapterId) {
-            console.log('Missing userId or chapterId');
-            return;
-        }
 
         fetch(`/get_user_scores?user_id=${userId}&chapter_id=${currentChapterId}`)
             .then(response => response.json())
@@ -1126,11 +1113,27 @@
     }
 
     function startExam() {
-        // 获取用户ID和章节ID
-        const userId = localStorage.getItem('userId');
+        console.log('开始执行startExam函数');
+        
+        // 从 localStorage 获取 userId（因为之前看到登录时使用的是 localStorage）
+        const userId = localStorage.getItem('userId');  // 改用 localStorage
         const chapterId = currentChapterId;
+        
+        console.log('准备提交数据:', { userId, chapterId });
 
-        // 创建一个表单并提交
+        if (!userId) {
+            console.error('未找到用户ID');
+            alert('请先登录');
+            return;
+        }
+
+        if (!chapterId) {
+            console.error('未找到章节ID');
+            alert('请先选择章节');
+            return;
+        }
+
+        // 创建表单并提交
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/exam';
@@ -1149,10 +1152,15 @@
         chapterIdInput.value = chapterId;
         form.appendChild(chapterIdInput);
 
-        // 添加表单到页面并提交
+        console.log('表单创建完成，准备提交，表单数据:', {
+            userId: userIdInput.value,
+            chapterId: chapterIdInput.value
+        });
+
+        // 添加到页面并提交
         document.body.appendChild(form);
         form.submit();
-        document.body.removeChild(form);
+        console.log('表单已提交');
     }
     </script>
 </body>

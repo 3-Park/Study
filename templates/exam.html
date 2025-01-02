@@ -199,7 +199,7 @@
     </div>
 
     <div class="nav-buttons">
-        <button class="home-btn" onclick="window.location.href='/'">返回主页</button>
+        <button class="home-btn" onclick="returnToHome()">返回主页</button>
     </div>
 
     <div class="exam-section">
@@ -221,7 +221,7 @@
                 </div>
                 {% endfor %}
             </div>
-            <button type="button" class="submit-btn" onclick="submitExam()">提交答案</button>
+            <button type="button" class="submit-btn" onclick="console.log('haha');submitExam()">提交答案</button>
         </form>
     </div>
 
@@ -271,6 +271,29 @@
             // 禁用提交按钮
             document.querySelector('.submit-btn').disabled = true;
         }
+
+        function returnToHome() {
+            const userId = document.getElementById('userId').value;
+            const username = document.getElementById('username').value;
+            const courseInfo = document.getElementById('courseInfo').value;
+            
+            try {
+                const language = courseInfo.split(' - ')[0];
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('username', username);
+                localStorage.setItem('selectedLanguage', language);
+                localStorage.setItem('isReturning', 'true');
+            } catch (e) {
+                alert('保存信息失败');
+            }
+
+            window.location.href = '/index';
+        }
     </script>
+
+    <!-- 添加隐藏的输入字段存储用户信息 -->
+    <input type="hidden" id="userId" value="{{ user_id }}">
+    <input type="hidden" id="username" value="{{ user.username }}">
+    <input type="hidden" id="courseInfo" value="{{ course_info }}">
 </body>
 </html> 

@@ -221,7 +221,7 @@
                 </div>
                 {% endfor %}
             </div>
-            <button type="button" class="submit-btn" onclick="console.log('haha');submitExam()">提交答案</button>
+            <button type="button" class="submit-btn" onclick="submitExam()">提交答案</button>
         </form>
     </div>
 
@@ -275,12 +275,13 @@
         function returnToHome() {
             const userId = document.getElementById('userId').value;
             const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const courseInfo = document.getElementById('courseInfo').value;
-            
             try {
                 const language = courseInfo.split(' - ')[0];
                 localStorage.setItem('userId', userId);
                 localStorage.setItem('username', username);
+                localStorage.setItem('email', email);
                 localStorage.setItem('selectedLanguage', language);
                 localStorage.setItem('isReturning', 'true');
             } catch (e) {
@@ -295,5 +296,6 @@
     <input type="hidden" id="userId" value="{{ user_id }}">
     <input type="hidden" id="username" value="{{ user.username }}">
     <input type="hidden" id="courseInfo" value="{{ course_info }}">
+    <input type="hidden" id="email" value="{{ user.email }}">
 </body>
 </html> 

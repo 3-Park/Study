@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, session, redirect, url_for
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash
 from models import db, Course, Word, User, Score
 import os
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS  # 直接导入配置常量
@@ -119,31 +119,18 @@ def login():
 
 @app.route('/update_username', methods=['POST'])
 def update_username():
-    try:
-        data = request.get_json()
-        user_id = data.get('user_id')
-        new_username = data.get('new_username')
-        
-        user = User.query.get(user_id)
-        if user:
-            user.username = new_username
-            db.session.commit()
-            
-            return jsonify({
-                'status': 'success',
-                'message': '用户名更新成功'
-            })
-        else:
-            return jsonify({
-                'status': 'error',
-                'message': '用户不存在'
-            }), 404
-            
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
+    user_id = request.form.get('userId')
+    new_username = request.form.get('newUsername')
+    print(f"更新用户信息：user_id={user_id}, new_username={new_username}")
+    
+    # 更新数据库
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        user.username = new_username
+        db.session.commit()
+        print("数据库更新成功")
+    
+    return '更新成功'
 
 @app.route('/record_answer', methods=['POST'])
 def record_answer():

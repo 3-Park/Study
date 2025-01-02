@@ -275,6 +275,7 @@
             padding: 10px;
             background: #f8f9fa;
             border-radius: 4px;
+            font-size: 12px;
         }
 
         .user-info p {
@@ -643,6 +644,20 @@
         .streak {
             color: #666;
         }
+
+        .user-info p span {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        #currentUsername {
+            width: auto;
+            min-width: 100px;
+        }
+
+        .user-info {
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -655,16 +670,18 @@
                 <button onclick="handleLogin()" class="login-button">登录/注册</button>
             </div>
             <div id="userInfo" class="user-info" style="display: none;">
-                <p>
-                    当前用户：<span id="currentUsername"></span>
-                    <a href="javascript:void(0)" onclick="showEditUsername()" class="edit-link">「修改」</a>
+                <p style="display: flex; align-items: center;">
+                    <span style="width: 60px;">当前用户</span>
+                    <input id="currentUsername" type="text" readonly 
+                           style="border: none; background: none; outline: none; width: 80px; margin: 0 5px;font-size: 14px;"
+                           onkeypress="handleEnter(event)">
+                    <button onclick="toggleEdit()" 
+                            style="width: 30px; color: blue; font-style: italic; align-self: flex-end; border: none; background: none; cursor: pointer; padding: 0; font-size: 10px;">修改</button>
                 </p>
-                <div id="editUsernameForm" style="display: none;" class="edit-username-form">
-                    <input type="text" id="newUsername" class="username-input" placeholder="输入新用户名">
-                    <button onclick="updateUsername()" class="save-button">保存</button>
-                    <button onclick="cancelEdit()" class="cancel-button">取消</button>
-                </div>
-                <p>邮箱：<span id="currentEmail"></span></p>
+                <p>
+                    <span>邮箱</span>
+                    <span id="currentEmail"></span>
+                </p>
             </div>
         </div>
 
@@ -835,7 +852,6 @@
 
     function selectChapter(chapterId) {
         currentChapterId = chapterId;
-        console.log('选择章节:', chapterId);  // 添加调试信息
         
         const userId = localStorage.getItem('userId');
         
@@ -886,7 +902,6 @@
     // 检查登录状态
     function checkLoginStatus() {
         const userId = localStorage.getItem('userId');
-        console.log('Current userId:', userId); // 添加调试日志
         return userId != null;
     }
 
@@ -966,9 +981,6 @@
         alert('本章节练习结束！');
     }
 
-    // 添加调试日志
-    console.log('Courses data:', {{ courses|tojson|safe }});
-
     // Toast 显示函数
     function showToast(message, duration = 2000) {
         const toast = document.getElementById('toast');
@@ -985,16 +997,19 @@
         if (localStorage.getItem('isReturning') === 'true') {
             const userId = localStorage.getItem('userId');
             const username = localStorage.getItem('username');
+            const email = localStorage.getItem('email');
+            const courseInfo = localStorage.getItem('courseInfo');
             const selectedLanguage = localStorage.getItem('selectedLanguage');
-
+            
             if (userId && username) {
                 document.getElementById('userInfo').style.display = 'block';
-                document.getElementById('userInfo').querySelector('span').textContent = '用户名：' + username;
-                document.getElementById('loginForm').style.display = 'none';
-
+                document.getElementById('currentUsername').value = username;
+                document.getElementById('currentEmail').textContent = email;
+                // 设置选中的语言
                 if (selectedLanguage) {
                     selectLanguage(selectedLanguage, true);
                 }
+                document.getElementById('loginForm').style.display = 'none';
             }
             
             localStorage.removeItem('isReturning');
@@ -1033,16 +1048,10 @@
                 // 显示用户信息
                 const userInfoDiv = document.getElementById('userInfo');
                 if (userInfoDiv) {
-                    userInfoDiv.innerHTML = `
-                        <div style="margin-bottom: 5px;">
-                            <span style="font-size: 12px;">用户名：</span>
-                            <span>${data.username}</span>
-                        </div>
-                        <div>
-                            <span style="font-size: 12px;">邮箱：</span>
-                            <span>${data.email}</span>
-                        </div>
-                    `;
+                    document.getElementById('currentUsername').value = data.username;
+                    document.getElementById('currentEmail').textContent = data.email;
+                    
+                    // 显示用户信息区域
                     userInfoDiv.style.display = 'block';
                 }
                 
@@ -1113,13 +1122,10 @@
     }
 
     function startExam() {
-        console.log('开始执行startExam函数');
         
         // 从 localStorage 获取 userId（因为之前看到登录时使用的是 localStorage）
         const userId = localStorage.getItem('userId');  // 改用 localStorage
         const chapterId = currentChapterId;
-        
-        console.log('准备提交数据:', { userId, chapterId });
 
         if (!userId) {
             console.error('未找到用户ID');
@@ -1152,15 +1158,41 @@
         chapterIdInput.value = chapterId;
         form.appendChild(chapterIdInput);
 
-        console.log('表单创建完成，准备提交，表单数据:', {
-            userId: userIdInput.value,
-            chapterId: chapterIdInput.value
-        });
-
         // 添加到页面并提交
         document.body.appendChild(form);
         form.submit();
-        console.log('表单已提交');
+    }
+
+    function toggleEdit() {
+        const input = document.getElementById('currentUsername');
+        if (input.readOnly) {
+            input.readOnly = false;
+            input.style.border = '1px solid #ccc';
+            input.focus();
+        }
+    }
+
+    async function handleEnter(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const input = event.target;
+            const formData = new FormData();
+            formData.append('userId', localStorage.getItem('userId'));  // 添加用户ID
+            formData.append('newUsername', input.value);
+            
+            try {
+                await fetch('/update_username', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // 更新完成后恢复只读状态
+                input.readOnly = true;
+                input.style.border = 'none';
+            } catch (error) {
+                console.error('更新失败:', error);
+            }
+        }
     }
     </script>
 </body>

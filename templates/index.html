@@ -704,8 +704,28 @@
 
         <!-- 答题区 -->
         <div class="quiz-section" id="quizSection">
-            <h2>答题区</h2>
-            <div class="word-display">
+            <h2 style="margin: 0 0 10px 0;">答题区</h2>
+            <button id="exam" 
+                    onclick="startExam()"
+                    style="
+                        height: 20px;
+                        padding: 0 10px;
+                        margin: 5px 0;
+                        background-color: #007bff;
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 12px;
+                        line-height: 20px;
+                        display: inline-block;
+                        vertical-align: middle;
+                        position: relative;
+                        z-index: 1;
+                    ">
+                进入考试
+            </button>
+            <div class="word-display" style="margin: 10px 0;">
                 <span style="font-size: 20px; margin-right: 10px;">随机单词：</span>
                 <span id="currentWord" style="font-size: 24px; font-weight: bold;"></span>
             </div>
@@ -1103,6 +1123,36 @@
             .catch(error => {
                 console.error('Error loading scores:', error);
             });
+    }
+
+    function startExam() {
+        // 获取用户ID和章节ID
+        const userId = localStorage.getItem('userId');
+        const chapterId = currentChapterId;
+
+        // 创建一个表单并提交
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/exam';
+
+        // 添加用户ID
+        const userIdInput = document.createElement('input');
+        userIdInput.type = 'hidden';
+        userIdInput.name = 'userId';
+        userIdInput.value = userId;
+        form.appendChild(userIdInput);
+
+        // 添加章节ID
+        const chapterIdInput = document.createElement('input');
+        chapterIdInput.type = 'hidden';
+        chapterIdInput.name = 'chapterId';
+        chapterIdInput.value = chapterId;
+        form.appendChild(chapterIdInput);
+
+        // 添加表单到页面并提交
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
     }
     </script>
 </body>

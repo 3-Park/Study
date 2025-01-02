@@ -1,236 +1,276 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>考试页面</title>
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+
         .header {
-            display: flex;
-            margin-bottom: 30px;
-        }
-        /* 账号选择区域 */
-        .account-section {
-            width: 200px;
-            padding: 10px;
-            margin-right: 20px;
-        }
-        /* 课程选择区域 */
-        .course-section {
-            width: 500px;  /* 增加宽度以容纳两列 */
-            padding: 10px;
-        }
-        .course-categories {
-            display: flex;
-            gap: 20px;  /* 两个分类之间的间距 */
-        }
-        .course-category {
-            flex: 1;  /* 平均分配空间 */
-            margin-bottom: 15px;
-        }
-        .course-category h4 {
-            margin: 5px 0;
-            color: #333;
-            font-size: 14px;
+            height: 20vh;
+            background-color: #f8f9fa;
+            padding: 20px;
             border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
         }
-        .account-btn {
-            width: 150px;
+
+        .exam-info {
+            flex: 1;
+        }
+
+        .exam-result {
+            flex: 1;
+            padding-left: 20px;
+            border-left: 1px solid #ddd;
+            display: none;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 14px;
+            width: 50%;
+        }
+
+        .user-info div {
+            padding: 5px;
+        }
+
+        .result-info {
+            font-size: 14px;
             padding: 10px;
+        }
+
+        .total-score {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
             margin-bottom: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
         }
-        .account-btn.active {
-            background-color: #4CAF50;
-            color: white;
+
+        .score-placeholder {
+            color: #999;
+            font-style: italic;
         }
-        .account-btn:not(.active) {
-            background-color: #f0f0f0;
-        }
-        .course-container {
-            display: grid;
-            grid-template-columns: repeat(2, 120px);
-            gap: 8px;
-        }
-        .course-btn {
-            width: 120px;
-            padding: 8px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            background-color: #f0f0f0;
-        }
+
         .exam-section {
-            margin-top: 30px;
+            height: 80vh;
+            padding: 10px;
+            background-color: white;
         }
-        .questions-grid {
+
+        h2 {
+            margin: 0 0 10px 0;
+        }
+
+        .exam-form {
+            width: 90%;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        .questions-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);  /* 每行4个题目 */
-            gap: 15px;  /* 题目之间的间距 */
-            margin-bottom: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
         }
-        .question-item {
+        
+        .question {
+            background-color: #f8f9fa;
             padding: 15px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            width: 250px;  /* 固定宽度 */
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
         }
-        .question-item p {
-            margin: 0 0 10px 0;
-            font-size: 14px;  /* 稍微减小题目文字大小 */
+        
+        .word {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
         }
-        .question-item input {
-            width: 100%;  /* 输入框宽度占满容器 */
-            box-sizing: border-box;  /* 确保padding不会增加总宽度 */
+        
+        .answer-input {
+            width: calc(100% - 16px);
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
         }
-        .wrong-answer {
-            color: red;
-        }
+        
         .submit-btn {
-            padding: 15px 30px;
+            display: block;
+            width: 200px;
+            padding: 10px;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
+            margin: 20px auto 0;
             font-size: 16px;
-            margin-top: 20px;
         }
-        .result-section {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
+        
+        .submit-btn:hover {
+            background-color: #45a049;
         }
-        /* 添加返回按钮样式 */
-        .back-button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #666;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-right: 15px;
+
+        @media (max-width: 1200px) {
+            .questions-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
-        .back-button:hover {
-            background-color: #555;
+
+        @media (max-width: 900px) {
+            .questions-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
-        /* 账号显示区域样式 */
-        .account-display {
-            width: 200px;
-            padding: 10px;
-            margin-right: 20px;
+
+        @media (max-width: 600px) {
+            .questions-container {
+                grid-template-columns: 1fr;
+            }
         }
-        .current-account {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 5px;
+
+        .result {
+            margin-top: 8px;
+            font-size: 14px;
             text-align: center;
-            font-size: 16px;
+            display: none;
+        }
+        
+        .correct {
+            color: #4CAF50;
+        }
+        
+        .incorrect {
+            color: #f44336;
+        }
+
+        .nav-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .home-btn {
+            padding: 5px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .home-btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 添加返回按钮 -->
-        <div style="margin-bottom: 20px;">
-            <a href="{{ url_for('index') }}" class="back-button">返回主页</a>
-        </div>
-        
-        <div class="header">
-            <!-- 修改账号显示部分 -->
-            <div class="account-display">
-                <h3>当前账号</h3>
-                <div class="current-account">
-                    {{ current_account }}
-                </div>
-            </div>
-
-            <!-- 课程选择部分 -->
-            <div class="course-section">
-                <h3>课程选择</h3>
-                <div class="course-categories">
-                    <!-- 标准日本语分类 -->
-                    <div class="course-category">
-                        <h4>书-标准日本语</h4>
-                        <form action="{{ url_for('start_exam') }}" method="post" class="course-container">
-                            {% for key in Files.keys() %}
-                                {% if key.startswith('Ch') %}
-                                <button type="submit" name="exam_ch" value="{{ key }}" class="course-btn">
-                                    {{ key }}
-                                </button>
-                                {% endif %}
-                            {% endfor %}
-                        </form>
-                    </div>
-                    <!-- 多灵国分类 -->
-                    <div class="course-category">
-                        <h4>多灵国</h4>
-                        <form action="{{ url_for('start_exam') }}" method="post" class="course-container">
-                            {% for key in Files.keys() %}
-                                {% if key.startswith('DLG') %}
-                                <button type="submit" name="exam_ch" value="{{ key }}" class="course-btn">
-                                    {{ key }}
-                                </button>
-                                {% endif %}
-                            {% endfor %}
-                        </form>
-                    </div>
-                </div>
+    <div class="header">
+        <div class="exam-info">
+            <div class="user-info">
+                <div>用户名：<span>{{ user.username }}</span></div>
+                <div>邮箱：<span>{{ user.email }}</span></div>
+                <div>课程信息：<span>{{ course_info }}</span></div>
             </div>
         </div>
-
-        <!-- 考试部分 -->
-        {% if questions %}
-        <div class="exam-section">
-            <h2>考试内容 - {{ current_chapter }}</h2>
-            <form action="{{ url_for('submit_exam') }}" method="post">
-                <input type="hidden" name="chapter" value="{{ current_chapter }}">
-                <div class="questions-grid">
-                    {% for index, question in questions.items() %}
-                    <div class="question-item {% if results and index in wrong_answers %}wrong-answer{% endif %}">
-                        <p>{{ loop.index }}. {{ question['question'] }}</p>
-                        <input type="text" name="answer_{{ index }}" 
-                               placeholder="请输入答案" 
-                               style="padding: 8px;"
-                               autocomplete="off"
-                               {% if results %}value="{{ submitted_answers[index] }}"{% endif %}>
-                        {% if results and index in wrong_answers %}
-                        <p class="wrong-answer">正确答案: {{ question['answer'] }}</p>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% if not results %}
-                <button type="submit" class="submit-btn">提交答案</button>
-                {% endif %}
-            </form>
+        <div class="exam-result">
+            <div class="result-info" style="display: none;">
+                <div class="total-score">总分：<span id="totalScore"></span></div>
+                <div>总题数：<span id="totalQuestions"></span></div>
+                <div>正确题数：<span id="correctCount"></span></div>
+                <div>错误题数：<span id="incorrectCount"></span></div>
+            </div>
         </div>
-        {% endif %}
-
-        <!-- 结果显示部分 -->
-        {% if results %}
-        <div class="result-section">
-            <h3>考试结果</h3>
-            <p>总题数: {{ total_questions }}</p>
-            <p>正确数: {{ correct_count }}</p>
-            <p>得分: {{ (correct_count / total_questions * 100) | round(2) }}%</p>
-            <a href="{{ url_for('exam') }}" class="submit-btn" style="text-decoration: none; display: inline-block;">
-                重新考试
-            </a>
-        </div>
-        {% endif %}
     </div>
+
+    <div class="nav-buttons">
+        <button class="home-btn" onclick="window.location.href='/'">返回主页</button>
+    </div>
+
+    <div class="exam-section">
+        <h2>答题区</h2>
+        <form id="examForm" class="exam-form">
+            <div class="questions-container">
+                {% for word in words %}
+                <div class="question">
+                    <div class="word">{{ word.word }}</div>
+                    <input type="text" 
+                           class="answer-input" 
+                           name="answer_{{ word.id }}" 
+                           placeholder="请输入答案"
+                           required>
+                    <input type="hidden" 
+                           name="correct_answer_{{ word.id }}" 
+                           value="{{ word.answerA }}|{{ word.answerB }}">
+                    <div class="result"></div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="submit-btn" onclick="submitExam()">提交答案</button>
+        </form>
+    </div>
+
+    <script>
+        function submitExam() {
+            const form = document.getElementById('examForm');
+            const questions = form.getElementsByClassName('question');
+            let correctCount = 0;
+            let totalQuestions = questions.length;
+            
+            // 检查每个答案
+            for (let question of questions) {
+                const answerInput = question.querySelector('.answer-input');
+                const correctAnswers = question.querySelector('input[type="hidden"]').value.split('|');
+                const userAnswer = answerInput.value.trim();
+                const resultDiv = question.querySelector('.result');
+                
+                const isCorrect = correctAnswers.includes(userAnswer);
+                if (isCorrect) {
+                    correctCount++;
+                }
+                
+                // 显示每题结果
+                if (isCorrect) {
+                    resultDiv.className = 'result correct';
+                    resultDiv.textContent = '正确';
+                } else {
+                    resultDiv.className = 'result incorrect';
+                    resultDiv.textContent = `错误，正确答案是 ${correctAnswers.join(' / ')}`;
+                }
+                
+                resultDiv.style.display = 'block';
+                answerInput.disabled = true;
+            }
+            
+            // 显示成绩区域
+            document.querySelector('.exam-result').style.display = 'block';
+            document.querySelector('.result-info').style.display = 'block';
+            
+            // 更新成绩显示
+            document.getElementById('totalScore').textContent = 
+                Math.round((correctCount / totalQuestions) * 100) + ' 分';
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('incorrectCount').textContent = totalQuestions - correctCount;
+            
+            // 禁用提交按钮
+            document.querySelector('.submit-btn').disabled = true;
+        }
+    </script>
 </body>
 </html> 

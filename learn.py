@@ -252,5 +252,27 @@ def get_user_scores():
             'message': '获取分数记录失败'
         })
 
+@app.route('/exam', methods=['POST'])
+def exam():
+    user_id = request.form.get('userId')
+    chapter_id = request.form.get('chapterId')
+    
+    # 获取用户信息
+    user = User.query.filter_by(id=user_id).first()
+    
+    # 获取课程信息
+    chapter = Course.query.filter_by(chapter_id=chapter_id).first()
+    course_info = f"{chapter.language} - {chapter.course} - {chapter.chapter}" if chapter else "未知课程"
+    
+    # 获取该章节的所有单词
+    words = Word.query.filter_by(chapter_id=chapter_id).all()
+    
+    return render_template('exam.html',
+                         user=user,
+                         user_id=user_id,
+                         chapter_id=chapter_id,
+                         course_info=course_info,
+                         words=words)
+
 if __name__ == '__main__':
     app.run(debug=True, port=53720)

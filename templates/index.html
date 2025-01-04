@@ -512,7 +512,7 @@
         }
 
         .quiz-section {
-            min-height: 200px;      /* 为整个答题区预留最小高度 */
+            min-height: 240px;      /* 为整个答题区预留最小高度 */
         }
 
         /* 统一的按钮基础样式 */
@@ -720,37 +720,55 @@
         </div>
 
         <!-- 答题区 -->
-        <div class="quiz-section" id="quizSection">
-            <h2 style="margin: 0 0 10px 0;font-size: 20px;">答题区</h2>
-            <button id="exam" 
-                    onclick="startExam()"
-                    style="
-                        height: 30px;
-                        padding: 0 10px;
-                        margin: 0;
-                        background-color: #007bff;
-                        color: white;
-                        border: none;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 12px;
-                        line-height: 20px;
-                        display: block;
-                    ">
-                进入考试
-            </button>
-            <div class="word-display" style="margin: 10px 0;">
-                <span style="font-size: 14px; margin-right: 10px;font-weight: bold;">随机单词：</span>
-                <span id="currentWord" style="font-size: 24px; font-weight: bold;"></span>
-            </div>
-            <div class="answer-input">
-                <input type="text" id="answerInput" placeholder="请输入答案" autocomplete="off">
-                <div class="button-group">
-                    <button id="submitButton" class="action-button submit-button" onclick="checkAnswer()">提交</button>
-                    <button id="nextButton" onclick="handleNextWord()" class="action-button next-button" style="display: none;">下一题</button>
+        <div style="display: flex; gap: 10px;">
+            <!-- 左侧答题区 -->
+            <div style="flex: 1;">
+                <div class="quiz-section" id="quizSection">
+                    <h2 style="margin: 0 0 10px 0;font-size: 20px;">答题区</h2>
+                    <button id="exam" 
+                            onclick="startExam()"
+                            style="
+                                height: 30px;
+                                padding: 0 10px;
+                                margin: 0;
+                                background-color: #007bff;
+                                color: white;
+                                border: none;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 12px;
+                                line-height: 20px;
+                                display: block;
+                            ">
+                        进入考试
+                    </button>
+                    <div class="word-display" style="margin: 10px 0;">
+                        <span style="font-size: 14px; margin-right: 10px;font-weight: bold;">随机单词：</span>
+                        <span id="currentWord" style="font-size: 24px; font-weight: bold;"></span>
+                    </div>
+                    <div class="answer-input">
+                        <input type="text" id="answerInput" placeholder="请输入答案" autocomplete="off">
+                        <div class="button-group">
+                            <button id="submitButton" class="action-button submit-button" onclick="checkAnswer()">提交</button>
+                            <button id="nextButton" onclick="handleNextWord()" class="action-button next-button" style="display: none;">下一题</button>
+                        </div>
+                    </div>
+                    <div class="error-message" id="errorMessage"></div>
                 </div>
             </div>
-            <div class="error-message" id="errorMessage"></div>
+            
+            <!-- 右侧系统说明 -->
+            <div style="flex: 1; padding: 20px; border-left: 1px solid #ccc;">
+                <h2 style="margin: 0 0 10px 0; font-weight: bold;">说明</h2>
+                <div style="font-size: 14px; line-height: 1.6; word-wrap: break-word; ">
+                    <p>1. 请先完成登录后再进行答题</p>
+                    <p>2. 邮箱仅用于账号管理,无需验证</p>
+                    <p>3. 答案为平假名/片假名拼音</p>
+                    <p>4. 点击"提交"按钮判断答案</p>
+                    <p>5. 进入考试可以整体测试章节</p>
+                    <p>6. 底部分数区为连续答对次数，答错清零</p>
+                </div>
+            </div>
         </div>
     </div>
 

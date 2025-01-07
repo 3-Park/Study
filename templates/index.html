@@ -1221,7 +1221,7 @@
             const word = currentWord.answerA;
             const utterance = new SpeechSynthesisUtterance(word);
             utterance.lang = 'ja-JP';  // 日语发音
-            utterance.rate = 1.2;      // 语速设置
+            utterance.rate = 0.6;      // 语速设置
             speechSynthesis.speak(utterance);
         }
     }

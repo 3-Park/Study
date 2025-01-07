@@ -744,7 +744,8 @@
                     </button>
                     <div class="word-display" style="margin: 10px 0;">
                         <span style="font-size: 14px; margin-right: 10px;font-weight: bold;">随机单词：</span>
-                        <span id="currentWord" style="font-size: 24px; font-weight: bold;"></span>
+                        <span id="currentWord" style="font-size: 24px; font-weight: bold; "></span>
+                        <button onclick="speakWord(this)" data-word="" style="margin-left: 10px; padding: 5px 10px; font-size: 16px; cursor: pointer; border: 1px solid #ccc; border-radius: 4px; background-color: #f8f9fa;">发音</button>
                     </div>
                     <div class="answer-input">
                         <input type="text" id="answerInput" placeholder="请输入答案" autocomplete="off">
@@ -1212,6 +1213,16 @@
             } catch (error) {
                 console.error('更新失败:', error);
             }
+        }
+    }
+
+    function speakWord(button) {
+        if ('speechSynthesis' in window) {
+            const word = currentWord.answerA;
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'ja-JP';  // 日语发音
+            utterance.rate = 1.2;      // 语速设置
+            speechSynthesis.speak(utterance);
         }
     }
     </script>

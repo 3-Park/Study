@@ -52,3 +52,12 @@ class Score(db.Model):
     chapter_id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(100), primary_key=True)
     streak = db.Column(db.Integer, default=0) 
+
+@get_or_create_table
+class Exams(db.Model):
+    __tablename__ = 't_exams'
+    __table_args__ = {'extend_existing': True}
+    user_id = db.Column(db.Integer, primary_key=True)
+    chapter_id = db.Column(db.Integer, primary_key=True)
+    score = db.Column(db.Float, primary_key=True)
+    exam_date = db.Column(db.DateTime, default=datetime.now) 

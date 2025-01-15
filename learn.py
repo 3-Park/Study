@@ -1,7 +1,8 @@
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash
-from models import db, Course, Word, User, Score
+from models import db, Course, Word, User, Score, Exams  # 添加 Exams 的导入
 import os
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS  # 直接导入配置常量
+from datetime import datetime
 
 def create_app():
     app = Flask(__name__)
@@ -55,9 +56,27 @@ def get_words(chapter_id):
 
 @app.route('/save_score', methods=['POST'])
 def save_score():
-    data = request.get_json()
-    # 这里应该保存分数到数据库
-    return jsonify({"status": "success"})
+    try:
+        data = request.get_json()
+        score = data.get('score')
+        user_id = data.get('user_id')
+        chapter_id = data.get('chapter_id')
+        exam_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        print(f"准备保存到数据库: user_id={user_id}, course_id={chapter_id}, score={score}, exam_date={exam_date}")
+        
+        new_exam = Exams(
+            user_id=user_id,
+            chapter_id=chapter_id,
+            score=score,
+            exam_date=exam_date
+        )
+        db.session.add(new_exam)
+        db.session.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"保存分数时出错: {str(e)}")
+        return jsonify({'success': False})
 
 @app.route('/api/get_courses/<language>')
 def get_courses_by_language(language):
@@ -281,7 +300,7 @@ def exam():
             
     else:  # GET请求
         print("处理GET请求")
-        print(f"GET请求时的session内容: {session}")
+        #print(f"GET请求时的session内容: {session}")
         
         try:
             user_id = session.get('user_id')
@@ -309,12 +328,21 @@ def exam():
             words = Word.query.filter_by(chapter_id=chapter_id).all()
             print(f"获取到 {len(words)} 个单词")
             
+            # 获取最近3次考试记录
+            recent_exams = Exams.query.filter_by(
+                user_id=session.get('user_id'),
+                chapter_id=session.get('chapter_id')
+            ).order_by(Exams.exam_date.desc())\
+                .limit(3)\
+                .all()
+            
             result = render_template('exam.html',
                                   user=user,
                                   user_id=user_id,
                                   chapter_id=chapter_id,
                                   course_info=course_info,
-                                  words=words)
+                                  words=words,
+                                  recent_exams=recent_exams)
                                   
             session.clear()
             return result
@@ -322,6 +350,6 @@ def exam():
         except Exception as e:
             # 返回错误信息而不是重定向
             return f"处理GET请求时发生错误: {str(e)}", 500
-
+        
 if __name__ == '__main__':
     app.run(debug=True, port=53720)

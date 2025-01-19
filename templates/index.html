@@ -682,6 +682,20 @@
                     <span style="font-weight: bold;">邮箱</span>
                     <span id="currentEmail"></span>
                 </p>
+                <p style="text-align: center; margin-top: 20px;">
+                    <button onclick="goToScoreSheet()" 
+                            style="
+                                padding: 2px 8px;
+                                background-color: #007bff;
+                                color: white;
+                                border: none;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 12px;
+                            ">
+                        成绩单
+                    </button>
+                </p>
             </div>
         </div>
 
@@ -1229,6 +1243,25 @@
             }
             speechSynthesis.speak(utterance);
         }
+    }
+
+    function goToScoreSheet() {
+        const userId = localStorage.getItem('userId');
+        // 创建一个表单并提交
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/score_sheet';
+        
+        // 创建隐藏的input字段
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'user_id';
+        input.value = userId;
+        
+        // 将input添加到表单中
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
     }
     </script>
 </body>

@@ -351,5 +351,46 @@ def exam():
             # 返回错误信息而不是重定向
             return f"处理GET请求时发生错误: {str(e)}", 500
         
+@app.route('/score_sheet', methods=['POST'])
+def score_sheet():
+    user_id = request.form.get('user_id')
+    
+    # 获取用户信息
+    user = User.query.filter_by(id=user_id).first()
+    
+    # 使用子查询获取每个章节的最新考试记录
+    latest_exams = db.session.query(
+        Exams.chapter_id,
+        db.func.max(Exams.exam_date).label('max_date')
+    ).filter(
+        Exams.user_id == user_id
+    ).group_by(
+        Exams.chapter_id
+    ).subquery()
+    
+    # 主查询关联最新记录，按chapter_id排序
+    exams = db.session.query(
+        Course.language, Course.course, Course.chapter,
+        Exams.score, Exams.exam_date
+    ).join(
+        Course, Exams.chapter_id == Course.chapter_id
+    ).join(
+        latest_exams, 
+        db.and_(
+            Exams.chapter_id == latest_exams.c.chapter_id,
+            Exams.exam_date == latest_exams.c.max_date
+        )
+    ).filter(
+        Exams.user_id == user_id
+    ).order_by(
+        Course.chapter_id
+    ).all()
+        
+    return render_template('score_sheet.html', 
+                         user_id=user_id, 
+                         username=user.username,
+                         email=user.email,
+                         exams=exams)
+
 if __name__ == '__main__':
     app.run(debug=True, port=53720)

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩单</title>
+    <style>
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">成绩单</h1>
+    <div style="text-align: center; margin: 20px;">
+        <span style="margin-right: 20px;">用户名：{{ username }}</span>
+        <span>邮箱：{{ email }}</span>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>语言</th>
+                <th>课程</th>
+                <th>章节</th>
+                <th>分数</th>
+                <th>最近考试时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if exams %}
+                {% for language, course, chapter, score, latest_date in exams %}
+                <tr>
+                    <td>{{ language }}</td>
+                    <td>{{ course }}</td>
+                    <td>{{ chapter }}</td>
+                    <td>{{ score }}</td>
+                    <td>{{ latest_date }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="5">暂无考试记录</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</body>
+</html> 

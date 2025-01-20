@@ -23,6 +23,7 @@ def index():
         # 从数据库获取所有课程信息并转换为字典
         courses = [course.to_dict() for course in Course.query.all()]
         print("Courses from database:", courses)
+        
         return render_template('index.html', courses=courses)
     except Exception as e:
         print("Error fetching courses:", str(e))

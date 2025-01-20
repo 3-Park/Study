@@ -738,7 +738,9 @@
             <!-- 左侧答题区 -->
             <div style="flex: 1;">
                 <div class="quiz-section" id="quizSection">
-                    <h2 style="margin: 0 0 10px 0;font-size: 20px;">答题区</h2>
+                    <h2 style="margin: 0 0 10px 0;font-size: 20px;">
+                        答题区 (<span id="wordCount">0</span>)
+                    </h2>
                     <button id="exam" 
                             onclick="startExam()"
                             style="
@@ -789,7 +791,7 @@
 
     <!-- 分数区 -->
     <div class="score-section">
-        <h2 style="font-size: 20px;">分数区</h2>
+        <h2 style="font-size: 20px;">分数区 (<span id="answeredCount">0</span>题)</h2>
         <div class="score-list" id="scoreList">
             {% for score in scores %}
             <div class="score-item">
@@ -909,6 +911,8 @@
             })
             .then(wordsData => {
                 currentWords = wordsData;
+                // 更新题目数量显示
+                document.getElementById('wordCount').textContent = wordsData.length;
                 showNextWord();
                 document.getElementById('quizSection').style.display = 'block';
             })
@@ -1126,6 +1130,9 @@
                 if (data.status === 'success') {
                     const scoreList = document.getElementById('scoreList');
                     if (scoreList && data.scores.length > 0) {
+                        // 更新已答题数量
+                        document.getElementById('answeredCount').textContent = data.scores.length;
+                        
                         let scoresHtml = '<div style="display: flex; flex-wrap: wrap; gap: 10px;">';
                         data.scores.forEach(score => {
                             scoresHtml += `
@@ -1147,6 +1154,8 @@
                         scoreList.innerHTML = scoresHtml;
                         scoreList.style.display = 'block';
                     } else if (scoreList) {
+                        // 如果没有答题记录，将计数设为0
+                        document.getElementById('answeredCount').textContent = '0';
                         scoreList.innerHTML = '<p style="text-align: center; color: #666;">暂无答题记录</p>';
                     }
                 }

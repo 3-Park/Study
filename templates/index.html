@@ -818,6 +818,17 @@
     let selectedCourse = '';
     let courses = {{ courses|tojson|safe }};  // 将课程数据传递给 JavaScript
 
+    // 添加权重追踪系统
+    let wordWeights = {};
+
+    function initializeWordWeights() {
+        if (currentWords) {
+            currentWords.forEach(word => {
+                wordWeights[word.word] = 1; // 初始权重为1
+            });
+        }
+    }
+
     function selectLanguage(language) {
         selectedLanguage = language;
         selectedCourse = '';
@@ -911,6 +922,9 @@
             })
             .then(wordsData => {
                 currentWords = wordsData;
+                // 重置权重系统
+                wordWeights = {};
+                initializeWordWeights();
                 // 更新题目数量显示
                 document.getElementById('wordCount').textContent = wordsData.length;
                 showNextWord();
@@ -932,8 +946,34 @@
             return null;
         }
         
-        let randomIndex = Math.floor(Math.random() * currentWords.length);
-        return currentWords[randomIndex];
+        // 如果权重对象为空，初始化权重
+        if (Object.keys(wordWeights).length === 0) {
+            initializeWordWeights();
+        }
+        
+        // 计算总权重
+        const totalWeight = Object.values(wordWeights).reduce((sum, weight) => sum + weight, 0);
+        let randomValue = Math.random() * totalWeight;
+        
+        // 基于权重选择单词
+        for (let word of currentWords) {
+            const weight = wordWeights[word.word];
+            if (randomValue <= weight) {
+                // 降低被选中单词的权重
+                wordWeights[word.word] = Math.max(0.1, wordWeights[word.word] * 0.5);
+                // 提高其他单词的权重
+                Object.keys(wordWeights).forEach(key => {
+                    if (key !== word.word) {
+                        wordWeights[key] = Math.min(2, wordWeights[key] * 1.1);
+                    }
+                });
+                return word;
+            }
+            randomValue -= weight;
+        }
+        
+        // 保险起见，如果上面的选择失败，返回最后一个单词
+        return currentWords[currentWords.length - 1];
     }
 
     // 检查登录状态

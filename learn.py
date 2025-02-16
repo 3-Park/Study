@@ -106,11 +106,17 @@ def login():
                 'message': '请输入邮箱地址'
             })
 
+        # 获取当前时间
+        current_time = datetime.now()
+
         # 查询用户是否存在
         user = User.query.filter_by(email=email).first()
         
         if user:
-            # 用户存在，返回用户信息
+            # 用户存在，更新登录时间
+            user.lastlogin = current_time
+            db.session.commit()
+            
             return jsonify({
                 'status': 'success',
                 'user_id': user.id,
@@ -119,7 +125,11 @@ def login():
             })
         else:
             # 用户不存在，创建新用户
-            new_user = User(email=email, username=email.split('@')[0])  # 使用邮箱前缀作为用户名
+            new_user = User(
+                email=email, 
+                username=email.split('@')[0],
+                lastlogin=current_time  # 设置首次登录时间
+            )
             db.session.add(new_user)
             db.session.commit()
             
